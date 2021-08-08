@@ -19,5 +19,15 @@
   "bugs": {
     "url": "https://github.com/RuksharHial/app-ip_address/issues"
   },
-  "homepage": "https://github.com/RuksharHial/app-ip_address#readme"
+  "homepage": "https://github.com/RuksharHial/app-ip_address#readme",
+  "keywords": [
+    "An",
+    "IAP",
+    "product",
+    "serving",
+    "IP",
+    "address",
+    "management",
+    "functions."
+  ]
 }
