@@ -6,37 +6,18 @@
 */
 const IPCIDR = require('ip-cidr');
 
-/*
-  Import the built-in path module.
-  See https://nodejs.org/api/path.html
-  The path module provides utilities for working with file and directory paths.
-  IAP requires the path module to access local file modules.
-  The path module exports an object.
-  Assign the imported object to variable path.
-*/
-const path = require('path');
-
-/**
- * Import helper function module located in the same directory
- * as this module. IAP requires the path object's join method
- * to unequivocally locate the file module.
- */
-const { getIpv4MappedIpv6Address } = require(path.join(__dirname, 'ipv6.js'));
-
-
 /**
  * Calculate and return the first host IP address from a CIDR subnet.
  * @param {string} cidrStr - The IPv4 subnet expressed
  *                 in CIDR format.
  * @param {callback} callback - A callback function.
- * @return {object} (firstIpAddress) - An IPv4 address.
+ * @return {string} (firstIpAddress) - An IPv4 address.
  */
 function getFirstIpAddress(cidrStr, callback) {
 
   // Initialize return arguments for callback
   let firstIpAddress = null;
   let callbackError = null;
-  let ipv6Address = null;
 
   // Instantiate an object from the imported class and assign the instance to variable cidr.
   const cidr = new IPCIDR(cidrStr);
@@ -56,37 +37,42 @@ function getFirstIpAddress(cidrStr, callback) {
     // If the passed CIDR is valid, call the object's toArray() method.
     // Notice the destructering assignment syntax to get the value of the first array's element.
     [firstIpAddress] = cidr.toArray(options);
-    ipv6Address=getIpv4MappedIpv6Address(firstIpAddress);
   }
   // Call the passed callback function.
   // Node.js convention is to pass error data as the first argument to a callback.
   // The IAP convention is to pass returned data as the first argument and error
   // data as the second argument to the callback function.
-  return callback({"ipv4":firstIpAddress,"ipv6":ipv6Address}, callbackError);
+  return callback(firstIpAddress, callbackError);
 }
-
-
-
 
 
 /*
   This section is used to test function and log any errors.
   We will make several positive and negative tests.
 */
-class IpAddress {
-  constructor() {
-    // IAP's global log object is used to output errors, warnings, and other
-    // information to the console, IAP's log files, or a Syslog server.
-    // For more information, consult the Log Class guide on the Itential
-    // Developer Hub https://developer.itential.io/ located
-    // under Documentation -> Developer Guides -> Log Class Guide
-    log.info('Starting the IpAddress product.');
-  }
+function main() {
+  // Create an array of tests with both valid CIDR and invalid IP subnets.
+  let sampleCidrs = ['172.16.10.0/24', '172.16.10.0 255.255.255.0', '172.16.10.128/25', '192.168.1.216/30'];
+  let sampleCidrsLen = sampleCidrs.length;
 
-  getFirstIpAddress(cidrStr, callback) {
-
-  // Initialize return arguments for callback
-  let firstIpAddress = null;
+  // Iterate over sampleCidrs and pass the element's value to getFirstIpAddress().
+  for (var i = 0; i < sampleCidrsLen; i++) {
+    console.log(`\n--- Test Number ${i + 1} getFirstIpAddress(${sampleCidrs[i]}) ---`);
+    // Call getFirstIpAddress and pass the test subnet and an anonymous callback function.
+    // The callback is using the fat arrow operator: () => { }
+    getFirstIpAddress(sampleCidrs[i], (data, error) => {
+      // Now we are inside the callback function.
+      // Display the results on the console.
+      if (error) {
+        console.error(`Error returned from GET request: ${error}`);
+      } else {
+        console.log(`Response returned from GET request: ${data}`);
+      }
+    });
   }
 }
-  module.exports = new IpAddress;
+
+/*
+  Call main to run it.
+*/
+main();
